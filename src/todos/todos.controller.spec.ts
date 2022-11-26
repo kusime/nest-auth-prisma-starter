@@ -3,13 +3,23 @@ import { BadRequestException, HttpStatus, Logger } from '@nestjs/common';
 import { TodosService } from '../prisma/todos/todos.service';
 import { jwtPayloadKey } from '../constant/jwtToken';
 import { prismaMock } from '../prisma/test/singleton';
+import { Test } from '@nestjs/testing';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('TodosController', () => {
   let controller: TodosController;
   let todo_service: TodosService;
   beforeAll(async () => {
-    todo_service = new TodosService(prismaMock);
-    controller = new TodosController(new Logger(), todo_service);
+    const module = await Test.createTestingModule({
+      providers: [
+        Logger,
+        { provide: PrismaService, useValue: prismaMock },
+        TodosService,
+      ],
+      controllers: [TodosController],
+    }).compile();
+    todo_service = await module.get<TodosService>(TodosService);
+    controller = await module.get<TodosController>(TodosController);
   });
 
   it('should be defined', () => {

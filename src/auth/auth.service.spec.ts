@@ -1,14 +1,37 @@
 import { AuthService } from './auth.service';
-import { UsersService } from '../prisma/users/users.service';
 import { prismaMock } from '../prisma/test/singleton';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { Test } from '@nestjs/testing';
+import { PrismaModule } from '../prisma/prisma.module';
+import { AuthModule } from './auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { jwtConstants } from '../constant/jwtToken';
+import { Logger } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let users_service: UsersService;
   beforeEach(async () => {
-    users_service = new UsersService(prismaMock);
-    service = new AuthService(users_service, new JwtService());
+    const module = await Test.createTestingModule({
+      imports: [
+        PrismaModule,
+        AuthModule,
+        // load the JwtModule to prepare the AuthService JwtService
+        PassportModule,
+        // register JwtModule globally
+        JwtModule.register({
+          secret: jwtConstants.secret,
+          signOptions: { expiresIn: '600s' },
+        }),
+      ],
+      providers: [
+        Logger,
+        JwtService,
+        { provide: PrismaService, useValue: prismaMock },
+        AuthService,
+      ],
+    }).compile();
+    service = await module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {

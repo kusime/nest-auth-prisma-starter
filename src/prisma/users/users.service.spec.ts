@@ -1,6 +1,11 @@
 import { UsersService } from './users.service';
 import { prismaMock } from '../test/singleton';
 import { User } from '@prisma/client';
+import { Test } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
+import { Logger } from '@nestjs/common';
+import { AuthService } from '../../auth/auth.service';
+import { PrismaService } from '../prisma.service';
 
 // this level of testing is aim to be able to check the data reveal is correct,
 // and we use the mock prisma client , so this might not be able to check error like
@@ -13,10 +18,20 @@ describe('UsersService', () => {
     password: 'password',
     name: 'test',
   };
-  beforeEach(() => {
+  beforeEach(async () => {
     // https://www.prisma.io/docs/guides/testing/unit-testing#dependency-injection
     // prepare the prisma context
-    service = new UsersService(prismaMock);
+    // prepare the prisma context
+    const module = await Test.createTestingModule({
+      providers: [
+        Logger,
+        JwtService,
+        AuthService,
+        { provide: PrismaService, useValue: prismaMock },
+        UsersService,
+      ],
+    }).compile();
+    service = await module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {

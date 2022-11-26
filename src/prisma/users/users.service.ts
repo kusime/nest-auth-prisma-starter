@@ -1,17 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DeepMockProxy } from 'jest-mock-extended';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
-  // constructor(
-  //   private readonly prisma: PrismaService | DeepMockProxy<PrismaClient>,
-  // ) {}
 
   // create
   async createUser(userCreateInput: Prisma.UserCreateInput) {

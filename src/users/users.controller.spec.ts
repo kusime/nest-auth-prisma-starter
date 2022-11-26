@@ -4,6 +4,8 @@ import { UsersService } from '../prisma/users/users.service';
 import { AuthService } from '../auth/auth.service';
 import { prismaMock } from '../prisma/test/singleton';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
+import { Test } from '@nestjs/testing';
 // controller test
 // prepare the dependencies of the controller to be tested with
 // mock service implementation since we don't care the severe logic
@@ -19,9 +21,19 @@ describe('UsersController', () => {
     name: 'test',
   };
   beforeEach(async () => {
-    users_service = new UsersService(prismaMock);
-    auth_service = new AuthService(users_service, new JwtService());
-    controller = new UsersController(new Logger(), users_service, auth_service);
+    const module = await Test.createTestingModule({
+      providers: [
+        Logger,
+        JwtService,
+        AuthService,
+        { provide: PrismaService, useValue: prismaMock },
+        UsersService,
+      ],
+      controllers: [UsersController],
+    }).compile();
+    auth_service = await module.get<AuthService>(AuthService);
+    users_service = await module.get<UsersService>(UsersService);
+    controller = await module.get<UsersController>(UsersController);
   });
 
   it('should be defined', () => {
